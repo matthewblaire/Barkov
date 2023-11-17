@@ -8,7 +8,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputConfig.h"
-#include "Barkov/InteractiveObjects/InteractionComponent.h"
+#include "Barkov/Components/InteractionComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
@@ -41,8 +41,7 @@ ABarkovCharacter::ABarkovCharacter()
 	HairSlot->SetupAttachment(GetMesh(), TEXT("headSocket"));
 	ArmorSlot->SetupAttachment(GetMesh());
 	BackSlot->SetupAttachment(GetMesh(), TEXT("backSocket"));
-
-	// TODO: Player inventory
+	
 	
 }
 
@@ -93,7 +92,7 @@ void ABarkovCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	Input->BindAction(InputConfig->SprintAction, ETriggerEvent::Started, this, &ThisClass::SprintPressed);
 	Input->BindAction(InputConfig->SprintAction, ETriggerEvent::Completed, this, &ThisClass::SprintReleased);
 	Input->BindAction(InputConfig->InteractAction, ETriggerEvent::Completed, this, &ThisClass::InteractButtonPressed);
-	
+
 }
 
 void ABarkovCharacter::JumpPressed()
@@ -163,6 +162,7 @@ void ABarkovCharacter::SprintPressed()
 	else
 	{
 		ServerSprintButtonPressed();
+		GetCharacterMovement()->MaxWalkSpeed = MaxSpeedSprint;
 	}
 	
 }
@@ -177,6 +177,7 @@ void ABarkovCharacter::SprintReleased()
 	else
 	{
 		ServerSprintButtonReleased();
+		GetCharacterMovement()->MaxWalkSpeed = MaxSpeedWalk;
 	}
 }
 
@@ -192,8 +193,6 @@ void ABarkovCharacter::OnRep_bIsSprinting()
 	}
 }
 
-
-
 void ABarkovCharacter::ServerSprintButtonReleased_Implementation()
 {
 	bIsSprinting = false;
@@ -206,12 +205,21 @@ void ABarkovCharacter::ServerSprintButtonPressed_Implementation()
 	GetCharacterMovement()->MaxWalkSpeed = MaxSpeedSprint;
 }
 
-void ABarkovCharacter::InteractButtonPressed()
-{
-	
-	InteractionComponent->InteractButtonPressed();
 
+
+void ABarkovCharacter::Restart()
+{
+	Super::Restart();
+	if (auto NewPlayerController = Cast<APlayerController>(GetController()))
+	{
+		OnPossession.Broadcast(NewPlayerController);
+	}
 	
+}
+
+void ABarkovCharacter::InteractButtonPressed() 
+{
+	OnInteractButtonPressed.Broadcast();
 }
 
 

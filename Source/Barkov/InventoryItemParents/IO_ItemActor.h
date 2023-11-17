@@ -3,52 +3,20 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "InteractiveObjectBase.h"
 #include "Barkov/Interfaces/I_InteractiveObject.h"
-#include "Door.generated.h"
+#include "Core/Actors/Parents/A_ItemActor.h"
+#include "IO_ItemActor.generated.h"
 
 /**
- * Multiplayer-ready doors
+ * 
  */
 UCLASS()
-class BARKOV_API ADoor : public AActor, public II_InteractiveObject
+class BARKOV_API AIO_ItemActor : public AA_ItemActor, public II_InteractiveObject
 {
 	GENERATED_BODY()
-public:
-	ADoor();
-	void StartAnimation();
+
 	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaSeconds) override;
-	bool IsOpen() const { return bIsOpen; }
-private:
-	UPROPERTY(ReplicatedUsing=OnRep_bIsOpen)
-	bool bIsOpen;
-
-	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess))
-	double DoorSpeed = 100;
-
-	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess))
-	USceneComponent* DoorHinge;
-
-	UFUNCTION()
-	void OnRep_bIsOpen();
-	
-	UPROPERTY(ReplicatedUsing=OnRep_YawTarget)
-	double YawTarget;
-	UFUNCTION()
-	void OnRep_YawTarget();
-	
-	int32 YawTargetMultiplier = 0;
-	UPROPERTY()
-	FVector OpenerLocation = FVector::ZeroVector;
-
-	
-protected:
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
-
-
-	
+	AIO_ItemActor();
 	////////////////////////////////////
 	/// Interactive Object Interface ///
 	////////////////////////////////////
@@ -56,8 +24,12 @@ protected:
 public:
 	
 	void SetGlow(bool bShouldGlow) override;
-	virtual void Interact(AActor* Interactor) override;
+
 	
+	virtual void Interact(AActor* Interactor) override;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_Interact(AActor* Interactor, UAC_Inventory* InteractorInventory);
 	
 	float GetInteractionRange() const override { return InteractionRange; }
 	FText GetPromptText() const override { return PromptText; }
@@ -84,7 +56,7 @@ private:
 
 	/* Sphere that detects if a player is within interaction range */
 	UPROPERTY(VisibleAnywhere, meta=(AllowPrivateAccess))
-	USphereComponent* AreaSphere;
+	class USphereComponent* AreaSphere;
 	
 #if WITH_EDITOR
 	/*

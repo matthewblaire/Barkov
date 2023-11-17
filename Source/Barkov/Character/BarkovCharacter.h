@@ -5,8 +5,12 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "BarkovCharacter.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FInteractButtonPressed);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPossession, APlayerController*, NewPlayerController);
 class UInteractionComponent;
 class UInteractWidget;
+class USpringArmComponent;
 UCLASS()
 class BARKOV_API ABarkovCharacter : public ACharacter 
 {
@@ -17,7 +21,6 @@ public:
 	ABarkovCharacter();
 
 protected:
-	
 	virtual void BeginPlay() override;
 
 public:	
@@ -28,13 +31,19 @@ public:
 	bool bJumpApexReached = false;
 	bool bIsJumping = false;
 	bool bRightFoot = false;
+
+	/* Used by the interaction component */
+	FInteractButtonPressed OnInteractButtonPressed;
+	
+	/* Used by the interaction component to ensure local control is checked only after player controller exists */
+	FOnPossession OnPossession;
 	
 private:
 	UPROPERTY(VisibleAnywhere)
-	class USpringArmComponent* SpringArm;
+	USpringArmComponent* SpringArm;
 	
 	UPROPERTY(VisibleAnywhere)
-	class UCameraComponent* Camera;
+	UCameraComponent* Camera;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess))
 	class UInputConfig* InputConfig;
@@ -98,8 +107,14 @@ private:
 	UInteractionComponent* InteractionComponent;
 public:
 	UInteractionComponent* GetInteractionComponent() {return InteractionComponent;}
-private:
+	virtual void Restart() override;
+
 	
+private:
+
+	/*
+	 *	broadcasts OnInteractButtonPressed delegate
+	 */
 	UFUNCTION()
 	void InteractButtonPressed();
 

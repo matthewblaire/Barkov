@@ -14,7 +14,8 @@ AInteractiveObjectBase::AInteractiveObjectBase()
 	
 	AreaSphere = CreateDefaultSubobject<USphereComponent>("Trigger area");
 	ObjectVisual  = CreateDefaultSubobject<UStaticMeshComponent>("Object visual");
-
+	ObjectVisual->CustomDepthStencilValue = 2;
+	
 	SetRootComponent(ObjectVisual);
 	AreaSphere->SetupAttachment(ObjectVisual);
 	AreaSphere->SetSphereRadius(InteractionRange);
@@ -36,19 +37,24 @@ void AInteractiveObjectBase::Interact(AActor* Interactor)
 void AInteractiveObjectBase::BeginPlay()
 {
 	Super::BeginPlay();
-	if (HasAuthority() == false)
+	if (HasAuthority() == false && !IsNetMode(NM_Standalone))
 	{
-		
+		/// previously this ran on both the server and every client, but I found it pointless to
+		/// burden the server with, when each interaction is already verified by distance upon interaction
+		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	}
 	else
 	{
 		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
-	/// previously this ran on both the server and every client, but I found it pointless to
-	/// burden the server with the extra load, when each interaction is already verified upon interaction
-	AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	AreaSphere->SetCollisionResponseToAllChannels(ECR_Overlap);
 	
+	
+	
+}
+
+void AInteractiveObjectBase::SetGlow(bool bShouldGlow)
+{
+	ObjectVisual->SetRenderCustomDepth(bShouldGlow);
 }
 
 #if WITH_EDITOR

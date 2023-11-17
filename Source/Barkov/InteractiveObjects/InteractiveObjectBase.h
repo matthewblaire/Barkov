@@ -1,5 +1,6 @@
 // (c) Matthew Blaire 2023
 
+/// deprecated. basically just a list of things to do in each object now.
 #pragma once
 
 #include "CoreMinimal.h"
@@ -13,23 +14,20 @@ class BARKOV_API AInteractiveObjectBase : public AActor
 	
 public:
 
-	
+	void SetGlow(bool bShouldGlow);
 	/* constructor */
 	AInteractiveObjectBase();
-	
 	
 	/**
 	 *	Base interaction method, called by Interactors
 	 * @param Interactor the actor that called Interact()
 	 */
 	virtual void Interact(AActor* Interactor);
-
 	
 	/**
 	 * @return the interaction range of this object 
 	 */
 	float GetInteractionRange() const { return InteractionRange; }
-	
 	
 	/**
 	 * @return the prompt text of this object
@@ -47,6 +45,8 @@ protected:
 	/* the static mesh */
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess))
 	UStaticMeshComponent* ObjectVisual;
+
+
 	
 private:
 	

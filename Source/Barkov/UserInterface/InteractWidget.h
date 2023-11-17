@@ -6,6 +6,8 @@
 #include "Blueprint/UserWidget.h"
 #include "InteractWidget.generated.h"
 
+class UInteractionComponent;
+class ABarkovCharacter;
 /**
  * 
  */
@@ -16,12 +18,23 @@ class BARKOV_API UInteractWidget : public UUserWidget
 	UPROPERTY(meta=(BindWidget))
 	class UTextBlock* PromptTextBlock;
 
+	UPROPERTY(meta=(BindWidgetAnim), Transient)
+	UWidgetAnimation* PromptFadeIn;
+
+	bool bPromptIsShowing = false;
+	
 	virtual void NativeConstruct() override;
+
+	
 public:
-	void DisplayPrompt(FString PromptText);
+	void DisplayPrompt();
 	void HidePrompt();
 	UFUNCTION(BlueprintCallable)
 	void Setup();
-	
+
+	UFUNCTION()
+	void OnInteractTargetUpdated(AActor* InteractTarget);
+
+	void BindDelegates(UInteractionComponent* InteractionComponent);
 	
 };
